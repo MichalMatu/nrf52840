@@ -1,16 +1,25 @@
 #pragma once
 
-#define STATUS_LED_PIN LED_BUILTIN
-#define STATUS_BLINK_INTERVAL_MS 1000UL
-#define SERIAL_BAUDRATE 115200
+#include <Arduino.h>
 
-#define OLED_POWER_PIN PIN_017
-#define OLED_SCL_PIN PIN_020
-#define OLED_SDA_PIN PIN_022
-#define OLED_WIDTH 128
-#define OLED_HEIGHT 64
+namespace app_config {
 
-#define BUTTON_K4_PIN PIN_024
-#define BUTTON_K3_PIN PIN_100
-#define BUTTON_K2_PIN PIN_011
-#define BUTTON_K1_PIN PIN_104
+constexpr uint8_t kStatusLedPin = LED_BUILTIN;
+constexpr uint8_t kStatusLedOnState = LED_STATE_ON;
+constexpr uint32_t kStatusBlinkIntervalMs = 1000UL;
+constexpr uint32_t kSerialBaudrate = 115200UL;
+
+constexpr uint8_t kOledPowerPin = PIN_017;
+constexpr uint8_t kOledSclPin = PIN_020;
+constexpr uint8_t kOledSdaPin = PIN_022;
+constexpr uint16_t kOledWidth = 128;
+constexpr uint16_t kOledHeight = 64;
+constexpr uint32_t kOledUpdateIntervalMs = 250UL;
+constexpr uint32_t kI2cClockHz = 400000UL;
+
+constexpr uint8_t kButtonK4Pin = PIN_024;
+constexpr uint8_t kButtonK3Pin = PIN_100;
+constexpr uint8_t kButtonK2Pin = PIN_011;
+constexpr uint8_t kButtonK1Pin = PIN_104;
+
+}  // namespace app_config

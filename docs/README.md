@@ -6,4 +6,8 @@ SuperMini / nice!nano w PlatformIO.
 - [start-nrf52840-supermini.md](start-nrf52840-supermini.md) - rekomendowana
   sciezka startu, opis pobranych projektow, komendy PlatformIO i lista
   najcenniejszych przykladow.
-
+- [tooling.md](tooling.md) - lokalne bramki jakosci, pre-commit i CI.
+- [firmware-guidelines.md](firmware-guidelines.md) - wzorce, antywzorce i
+  zasady oszczedzania zasobow MCU.
+- [hardware/oled-panel.md](hardware/oled-panel.md) - dzialajace podlaczenie
+  OLED i przyciskow.

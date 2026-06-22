@@ -33,3 +33,10 @@ PIN_113  // P1.13, MOSI
 PIN_115  // P1.15, MISO
 ```
 
+The current OLED test remaps I2C in firmware:
+
+```cpp
+Wire.setPins(PIN_022, PIN_020);  // SDA, SCL
+```
+
+See [oled-panel.md](oled-panel.md) for the working OLED wiring.
