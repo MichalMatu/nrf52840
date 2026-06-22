@@ -30,6 +30,16 @@ void OledPanel::begin(const ButtonPanel& buttons) {
   Serial.println(sda_pin_);
 
   begin_power();
+  print_i2c_line_state();
+  if (!i2c_lines_idle()) {
+    recover_i2c_bus();
+  }
+
+  if (!i2c_lines_idle()) {
+    Serial.println("OLED init skipped: I2C bus is not idle");
+    return;
+  }
+
   ensure_wire();
 
   if (!begin_display_at(kPrimaryOledAddress) && !begin_display_at(kSecondaryOledAddress)) {
@@ -49,6 +59,42 @@ void OledPanel::update(uint32_t now_ms, const ButtonPanel& buttons) {
 
   last_update_ms_ = now_ms;
   draw_status_screen(buttons);
+}
+
+void OledPanel::render_menu(const char* title, const char* subtitle, size_t selected_index,
+                            size_t item_count, const char* (*item_at)(void* context, size_t index),
+                            void* context) {
+  if (!ready_) {
+    return;
+  }
+
+  constexpr size_t kVisibleItems = 5;
+  size_t first_item = 0;
+  if (selected_index >= kVisibleItems) {
+    first_item = selected_index - kVisibleItems + 1;
+  }
+
+  display_.clearDisplay();
+  display_.setTextSize(1);
+  display_.setTextColor(SSD1306_WHITE);
+  display_.setCursor(0, 0);
+  display_.println(title);
+
+  display_.setCursor(0, 10);
+  display_.println(subtitle);
+
+  for (size_t row = 0; row < kVisibleItems; row++) {
+    const size_t item_index = first_item + row;
+    if (item_index >= item_count) {
+      break;
+    }
+
+    display_.setCursor(0, 22 + row * 8);
+    display_.print(item_index == selected_index ? ">" : " ");
+    display_.println(item_at(context, item_index));
+  }
+
+  display_.display();
 }
 
 bool OledPanel::ready() const {
@@ -82,6 +128,41 @@ void OledPanel::ensure_wire() {
   wire_ready_ = true;
 }
 
+bool OledPanel::i2c_lines_idle() const {
+  pinMode(sda_pin_, INPUT_PULLUP);
+  pinMode(scl_pin_, INPUT_PULLUP);
+  delay(5);
+  return digitalRead(sda_pin_) == HIGH && digitalRead(scl_pin_) == HIGH;
+}
+
+void OledPanel::print_i2c_line_state() const {
+  pinMode(sda_pin_, INPUT_PULLUP);
+  pinMode(scl_pin_, INPUT_PULLUP);
+  delay(5);
+
+  Serial.print("I2C lines: SDA=");
+  Serial.print(digitalRead(sda_pin_) == HIGH ? "HIGH" : "LOW");
+  Serial.print(" SCL=");
+  Serial.println(digitalRead(scl_pin_) == HIGH ? "HIGH" : "LOW");
+}
+
+void OledPanel::recover_i2c_bus() {
+  Serial.println("I2C recovery: toggling SCL");
+  pinMode(sda_pin_, INPUT_PULLUP);
+  pinMode(scl_pin_, OUTPUT);
+
+  for (uint8_t pulse = 0; pulse < 9; pulse++) {
+    digitalWrite(scl_pin_, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(scl_pin_, LOW);
+    delayMicroseconds(10);
+  }
+
+  pinMode(scl_pin_, INPUT_PULLUP);
+  delay(5);
+  print_i2c_line_state();
+}
+
 bool OledPanel::begin_display_at(uint8_t address) {
   if (!display_.begin(SSD1306_SWITCHCAPVCC, address)) {
     return false;
@@ -89,8 +170,24 @@ bool OledPanel::begin_display_at(uint8_t address) {
 
   address_ = address;
   ready_ = true;
+  force_display_on();
   draw_boot_screen();
   return true;
+}
+
+void OledPanel::force_display_on() {
+  display_.ssd1306_command(SSD1306_DISPLAYON);
+  display_.ssd1306_command(SSD1306_SETCONTRAST);
+  display_.ssd1306_command(0xFF);
+  display_.dim(false);
+  display_.invertDisplay(false);
+
+  display_.clearDisplay();
+  display_.fillScreen(SSD1306_WHITE);
+  display_.display();
+  delay(500);
+  display_.clearDisplay();
+  display_.display();
 }
 
 void OledPanel::draw_boot_screen() {

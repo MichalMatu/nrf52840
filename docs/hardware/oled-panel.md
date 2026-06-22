@@ -19,6 +19,9 @@ GND VCC SCL SDA K4 K3 K2 K1
 | K2 | PIN_011 | Button input |
 | K1 | PIN_104 | Button input |
 
+Button order in normal menu firmware is physical top-to-bottom on the side
+buttons: `K1` up, `K2` down, `K3` enter, `K4` return.
+
 The firmware leaves `PIN_017` unused/high-Z for this wiring, configures the
 buttons as `INPUT_PULLUP`, and tries SSD1306 addresses `0x3C` and `0x3D`.
 

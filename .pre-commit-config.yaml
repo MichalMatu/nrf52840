@@ -14,3 +14,10 @@ repos:
         language: system
         pass_filenames: false
         stages: [pre-push, manual]
+
+      - id: doxygen-docs
+        name: Doxygen API documentation
+        entry: doxygen Doxyfile
+        language: system
+        pass_filenames: false
+        stages: [manual]

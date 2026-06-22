@@ -20,6 +20,7 @@ This repository is intended to be a standalone firmware workspace.
 - `pio run` verifies the firmware build and reports memory use.
 - `pio check --fail-on-defect medium` runs static analysis.
 - `scripts/quality.sh` runs the local gate used by CI.
+- `Doxyfile` configures local API documentation output under `build/html/`.
 
 ## Local-Only Research
 

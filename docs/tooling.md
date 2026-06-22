@@ -10,11 +10,12 @@ Actions.
 - PlatformIO `pio check` runs static analysis. The default analyzer is Cppcheck.
 - `pre-commit` runs the fast formatting gate before commit and the full
   PlatformIO quality gate before push.
+- Doxygen generates local API documentation for stable public headers.
 
 ## One-time setup
 
 ```sh
-pre-commit install --hook-type pre-commit --hook-type pre-push
+scripts/install-hooks.sh
 ```
 
 The hooks are optional but recommended. The same checks can always be run
@@ -46,6 +47,12 @@ Show firmware size:
 scripts/size-report.sh
 ```
 
+Generate API documentation:
+
+```sh
+doxygen Doxyfile
+```
+
 Upload remains explicit:
 
 ```sh
@@ -67,6 +74,13 @@ scripts/quality.sh
 The project fails on medium and high severity defects. Low severity findings are
 allowed for now because Arduino entry points and third-party libraries can
 produce noisy style warnings.
+
+## Hook policy
+
+- `pre-commit`: formatting check only, so normal commits stay fast.
+- `pre-push`: full `scripts/quality.sh` gate.
+- `manual`: Doxygen generation and full quality checks can be run explicitly
+  with `pre-commit run --hook-stage manual --all-files`.
 
 Primary references:
 

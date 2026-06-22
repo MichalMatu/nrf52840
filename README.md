@@ -53,8 +53,8 @@ vendor/              Ignored local research snapshots
 ## Current Firmware
 
 The current firmware powers and drives the SSD1306 OLED panel, reads the four
-panel buttons, toggles `LED_BUILTIN` once per second, and prints status on USB
-serial when the CDC interface is available.
+panel buttons, shows a device-mode menu, toggles `LED_BUILTIN` once per second,
+and prints status on USB serial when the CDC interface is available.
 
 ## Useful Commands
 
@@ -63,6 +63,7 @@ pio run
 scripts/quality.sh
 scripts/format.sh
 scripts/size-report.sh
+doxygen Doxyfile
 pio run -t upload
 pio device list
 pio device monitor -b 115200

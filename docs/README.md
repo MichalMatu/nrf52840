@@ -9,5 +9,9 @@ SuperMini / nice!nano w PlatformIO.
 - [tooling.md](tooling.md) - lokalne bramki jakosci, pre-commit i CI.
 - [firmware-guidelines.md](firmware-guidelines.md) - wzorce, antywzorce i
   zasady oszczedzania zasobow MCU.
+- [architecture.md](architecture.md) - podzial modulow firmware i przeplyw
+  programu.
+- [doxygen.md](doxygen.md) - generowanie lekkiej dokumentacji API.
+- [menu.md](menu.md) - aktualne menu OLED i mapowanie przyciskow.
 - [hardware/oled-panel.md](hardware/oled-panel.md) - dzialajace podlaczenie
   OLED i przyciskow.

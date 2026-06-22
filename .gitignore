@@ -19,10 +19,10 @@ vendor/
 *~
 
 # Build and firmware artifacts
+build/
 *.bin
 *.elf
 *.hex
 *.map
 *.uf2
 *.zip
-

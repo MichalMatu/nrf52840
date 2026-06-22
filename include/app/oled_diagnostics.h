@@ -7,12 +7,16 @@
 
 namespace app {
 
+/// Serial-controlled OLED and I2C recovery tool for hardware bring-up.
 class OledDiagnostics {
  public:
+  /// Creates diagnostics for one I2C OLED wiring configuration.
   OledDiagnostics(uint8_t power_pin, bool uses_gpio_power, uint8_t sda_pin, uint8_t scl_pin,
                   uint32_t i2c_clock_hz, uint32_t heartbeat_interval_ms);
 
+  /// Prints command help and prepares GPIO power handling.
   void begin();
+  /// Handles serial commands and emits periodic diagnostic heartbeats.
   void update(uint32_t now_ms, const drivers::ButtonPanel& buttons);
 
  private:
