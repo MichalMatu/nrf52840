@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Adafruit_TinyUSB.h>
 
+#include "app/oled_diagnostics.h"
 #include "app/status_led.h"
 #include "app_config.h"
 #include "drivers/button_panel.h"
@@ -17,10 +18,13 @@ constexpr drivers::ButtonConfig kButtons[] = {
 drivers::ButtonPanel button_panel(kButtons, sizeof(kButtons) / sizeof(kButtons[0]));
 app::StatusLed status_led(app_config::kStatusLedPin, app_config::kStatusLedOnState,
                           app_config::kStatusBlinkIntervalMs);
-drivers::OledPanel oled_panel(app_config::kOledPowerPin, app_config::kOledSdaPin,
-                              app_config::kOledSclPin, app_config::kOledWidth,
-                              app_config::kOledHeight, app_config::kI2cClockHz,
-                              app_config::kOledUpdateIntervalMs);
+app::OledDiagnostics oled_diagnostics(app_config::kOledPowerPin, app_config::kOledUsesGpioPower,
+                                      app_config::kOledSdaPin, app_config::kOledSclPin,
+                                      app_config::kI2cClockHz, app_config::kOledScanIntervalMs);
+drivers::OledPanel oled_panel(app_config::kOledPowerPin, app_config::kOledUsesGpioPower,
+                              app_config::kOledSdaPin, app_config::kOledSclPin,
+                              app_config::kOledWidth, app_config::kOledHeight,
+                              app_config::kI2cClockHz, app_config::kOledUpdateIntervalMs);
 }  // namespace
 
 // cppcheck-suppress unusedFunction
@@ -36,7 +40,11 @@ void setup() {
   Serial.println("Board: nRF52840 SuperMini / nice!nano");
   Serial.println("Status: booted");
 
-  oled_panel.begin(button_panel);
+  if (app_config::kOledDiagnosticMode) {
+    oled_diagnostics.begin();
+  } else {
+    oled_panel.begin(button_panel);
+  }
 }
 
 // cppcheck-suppress unusedFunction
@@ -47,5 +55,9 @@ void loop() {
     Serial.println(status_led.enabled() ? "led:on" : "led:off");
   }
 
-  oled_panel.update(now, button_panel);
+  if (app_config::kOledDiagnosticMode) {
+    oled_diagnostics.update(now, button_panel);
+  } else {
+    oled_panel.update(now, button_panel);
+  }
 }

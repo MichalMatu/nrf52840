@@ -55,9 +55,13 @@ buffer costs 1024 bytes before library overhead. This is acceptable for the
 current test firmware, but avoid adding additional full-screen buffers unless a
 feature requires it.
 
-Powering the OLED from a GPIO is useful for a quick test, but it is not a
-general power design. If the display becomes unstable or the project adds more
-peripherals, power the OLED from the board supply rail or add a proper switch.
+The OLED is powered from board `VCC / 3.3V`. Do not power the display directly
+from a GPIO. If switched display power is needed later, use a proper transistor
+or MOSFET stage and keep the firmware pin as an enable signal only.
+
+The I2C/OLED diagnostic path is intentionally kept outside the display driver.
+Enable it with `kOledDiagnosticMode` when wiring needs to be checked without
+initializing the SSD1306 framebuffer.
 
 ## References
 

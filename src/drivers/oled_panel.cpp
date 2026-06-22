@@ -6,9 +6,11 @@ constexpr uint8_t kPrimaryOledAddress = 0x3C;
 constexpr uint8_t kSecondaryOledAddress = 0x3D;
 }  // namespace
 
-OledPanel::OledPanel(uint8_t power_pin, uint8_t sda_pin, uint8_t scl_pin, uint16_t width,
-                     uint16_t height, uint32_t i2c_clock_hz, uint32_t update_interval_ms)
+OledPanel::OledPanel(uint8_t power_pin, bool uses_gpio_power, uint8_t sda_pin, uint8_t scl_pin,
+                     uint16_t width, uint16_t height, uint32_t i2c_clock_hz,
+                     uint32_t update_interval_ms)
     : power_pin_(power_pin),
+      uses_gpio_power_(uses_gpio_power),
       sda_pin_(sda_pin),
       scl_pin_(scl_pin),
       i2c_clock_hz_(i2c_clock_hz),
@@ -16,25 +18,19 @@ OledPanel::OledPanel(uint8_t power_pin, uint8_t sda_pin, uint8_t scl_pin, uint16
       last_update_ms_(0),
       display_(width, height, &Wire, -1),
       ready_(false),
+      wire_ready_(false),
       address_(0) {}
 
 void OledPanel::begin(const ButtonPanel& buttons) {
-  pinMode(power_pin_, OUTPUT);
-  digitalWrite(power_pin_, HIGH);
-  delay(250);
-
-  Serial.print("OLED power: PIN_");
-  Serial.println(power_pin_);
+  Serial.print("OLED power source: ");
+  Serial.println(uses_gpio_power_ ? "GPIO" : "external VCC");
   Serial.print("OLED SCL:   PIN_");
   Serial.println(scl_pin_);
   Serial.print("OLED SDA:   PIN_");
   Serial.println(sda_pin_);
 
-  Wire.setPins(sda_pin_, scl_pin_);
-  Wire.begin();
-  Wire.setClock(i2c_clock_hz_);
-
-  scan_i2c();
+  begin_power();
+  ensure_wire();
 
   if (!begin_display_at(kPrimaryOledAddress) && !begin_display_at(kSecondaryOledAddress)) {
     Serial.println("OLED init failed at 0x3C and 0x3D");
@@ -63,28 +59,27 @@ uint8_t OledPanel::address() const {
   return address_;
 }
 
-uint8_t OledPanel::scan_i2c() {
-  uint8_t found = 0;
-
-  Serial.println("I2C scan:");
-  for (uint8_t candidate_address = 1; candidate_address < 127; candidate_address++) {
-    Wire.beginTransmission(candidate_address);
-    const uint8_t error = Wire.endTransmission();
-    if (error == 0) {
-      found++;
-      Serial.print("  0x");
-      if (candidate_address < 16) {
-        Serial.print("0");
-      }
-      Serial.println(candidate_address, HEX);
-    }
+void OledPanel::begin_power() {
+  if (uses_gpio_power_) {
+    digitalWrite(power_pin_, HIGH);
+    pinMode(power_pin_, OUTPUT);
+    delay(250);
+    return;
   }
 
-  if (found == 0) {
-    Serial.println("  no devices found");
+  pinMode(power_pin_, INPUT);
+  Serial.println("OLED GPIO power disabled; using external VCC");
+}
+
+void OledPanel::ensure_wire() {
+  if (wire_ready_) {
+    return;
   }
 
-  return found;
+  Wire.setPins(sda_pin_, scl_pin_);
+  Wire.begin();
+  Wire.setClock(i2c_clock_hz_);
+  wire_ready_ = true;
 }
 
 bool OledPanel::begin_display_at(uint8_t address) {
@@ -107,7 +102,7 @@ void OledPanel::draw_boot_screen() {
   display_.print("OLED 0x");
   display_.println(address_, HEX);
   display_.println("I2C: SDA 022 SCL 020");
-  display_.println("Power: 017");
+  display_.println(uses_gpio_power_ ? "Power: GPIO" : "Power: VCC");
   display_.display();
 }
 
